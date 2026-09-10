@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paulo Roberto // System Diagnostics & Resume</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #06060a;
+      color: #ffffff;
+      font-family: 'Share Tech Mono', monospace;
+      padding: 30px 16px;
+      line-height: 1.6;
+      background-image: 
+        linear-gradient(to right, #12121f 1px, transparent 1px),
+        linear-gradient(to bottom, #12121f 1px, transparent 1px);
+      background-size: 40px 40px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* VARREDURA LASER SCANLINE */
+    .scanline {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: linear-gradient(to bottom, rgba(0, 240, 255, 0), rgba(0, 240, 255, 0.15) 50%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.4));
+      background-size: 100% 4px;
+      pointer-events: none;
+      z-index: 99;
+      opacity: 0.35;
+    }
+    .laser-beam {
+      position: fixed;
+      left: 0; width: 100vw; height: 2px;
+      background: #00f0ff;
+      box-shadow: 0 0 10px #00f0ff;
+      opacity: 0.4;
+      pointer-events: none;
+      z-index: 98;
+      animation: scanLaser 7s linear infinite;
+    }
+    @keyframes scanLaser {
+      0% { top: 0; opacity: 0; }
+      15% { opacity: 0.5; }
+      85% { opacity: 0.5; }
+      100% { top: 100vh; opacity: 0; }
+    }
+
+    .container { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; position: relative; z-index: 10; }
+    
+    /* HUD PRINCIPAL / TERMINAL CARD */
+    .hud-box {
+      border: 2px solid #ff0055;
+      background-color: rgba(6, 6, 10, 0.95);
+      padding: 24px 28px;
+      box-shadow: 0 0 16px rgba(255, 0, 85, 0.4);
+      position: relative;
+    }
+    .hud-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 12px; }
+    .sys-diag { color: #00f0ff; letter-spacing: 1px; }
+    .online { color: #00ff66; font-weight: bold; animation: pulseOnline 1.5s infinite; }
+    @keyframes pulseOnline { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    .title { 
+      font-family: 'Chakra Petch', sans-serif; 
+      font-size: 25px; 
+      color: #fff; 
+      letter-spacing: 2px; 
+      text-shadow: 0 0 8px rgba(255, 0, 85, 0.9); 
+    }
+    .username { color: #ff0055; font-size: 14px; font-weight: 600; margin-top: 4px; text-shadow: 0 0 5px #ff0055; }
+    
+    .divider { height: 1px; background-color: #800033; margin: 16px 0; }
+    
+    /* STATUS BAR COM TEXTO CIANO E CURSOR */
+    .status-bar { 
+      background: #000; 
+      border-left: 4px solid #00f0ff; 
+      padding: 10px 14px; 
+      font-size: 13.5px; 
+      color: #00f0ff; 
+      display: flex; 
+      align-items: center; 
+      gap: 6px; 
+    }
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 16px;
+      background-color: #00f0ff;
+      animation: blinkCursor 0.8s infinite;
+      box-shadow: 0 0 6px #00f0ff;
+    }
+    @keyframes blinkCursor { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    .grid-data { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px 20px; font-size: 13px; }
+    .label { font-family: 'Chakra Petch', sans-serif; color: #ff0055; font-weight: 700; letter-spacing: 1px; }
+    .val { color: #fff; }
+    .cyan { color: #00f0ff; }
+    
+    .buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+    .btn { padding: 8px 16px; font-size: 12px; text-decoration: none; font-weight: bold; border-radius: 2px; transition: all 0.2s; }
+    .btn-pink { background: rgba(255,0,85,0.15); border: 1px solid #ff0055; color: #ff0055; }
+    .btn-pink:hover { background: #ff0055; color: #fff; box-shadow: 0 0 10px #ff0055; }
+    .btn-cyan { background: rgba(0,240,255,0.15); border: 1px solid #00f0ff; color: #00f0ff; }
+    .btn-cyan:hover { background: #00f0ff; color: #000; box-shadow: 0 0 10px #00f0ff; }
+    .btn-dark { background: #12121f; border: 1px solid #333; color: #fff; }
+    .btn-dark:hover { background: #222; }
+
+    /* CARDS DO CURRÍCULO */
+    .card { 
+      background: rgba(10, 11, 18, 0.9); 
+      border: 1px solid #1f1f33; 
+      padding: 22px; 
+      transition: border-color 0.3s ease; 
+    }
+    .card:hover { border-color: rgba(255, 0, 85, 0.4); }
+    .sec-title-pink { font-family: 'Chakra Petch', sans-serif; color: #ff0055; font-size: 16px; margin-bottom: 10px; letter-spacing: 1px; }
+    .sec-title-cyan { font-family: 'Chakra Petch', sans-serif; color: #00f0ff; font-size: 16px; margin-bottom: 10px; letter-spacing: 1px; }
+    .p-text { font-size: 13px; color: #b0b6c4; line-height: 1.7; }
+    
+    .exp-item { border-left: 2px solid #00f0ff; padding-left: 16px; margin-bottom: 18px; }
+    .exp-title { font-size: 14.5px; color: #fff; font-weight: bold; }
+    .exp-role { color: #ff0055; font-size: 13px; margin-bottom: 8px; }
+    ul { list-style: square; padding-left: 18px; font-size: 13px; color: #9ca3af; }
+    li { margin-bottom: 4px; }
+    
+    .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+    .skill-box { background: #000; border: 1px solid #1f1f33; padding: 12px; font-size: 12.5px; }
+    
+    .repo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+    .repo-card { background: #000; border: 1px solid #1f1f33; padding: 14px; text-decoration: none; display: block; transition: 0.2s; }
+    .repo-card:hover { border-color: #00f0ff; box-shadow: 0 0 10px rgba(0, 240, 255, 0.2); }
+    .repo-name { color: #00f0ff; font-weight: bold; display: flex; justify-content: space-between; font-size: 13.5px; }
+    .repo-desc { color: #8892b0; font-size: 12px; margin-top: 6px; }
+
+    footer { text-align: center; font-size: 11px; color: #ff0055; opacity: 0.85; padding: 20px 0; letter-spacing: 3px; }
+  </style>
+</head>
+<body>
+  <!-- EFEITOS SCANLINE E LASER -->
+  <div class="scanline"></div>
+  <div class="laser-beam"></div>
+
+  <div class="container">
+    <!-- HUD BOX -->
+    <div class="hud-box">
+      <div class="hud-header">
+        <span class="sys-diag">┌──[ SYSTEM_DIAGNOSTICS // USER_PROFILE ]────────────────┐</span>
+        <span class="online">● STATUS: ONLINE</span>
+      </div>
+
+      <h1 class="title">PAULO ROBERTO GRIGGI DE CAMPOS</h1>
+      <p class="username">@Paulorgdc // FULL_STACK_ENGINEER</p>
+
+      <div class="divider"></div>
+
+      <!-- STATUS BAR COM ANIMAÇÃO DINÂMICA DAS 8 FRASES -->
+      <div class="status-bar">
+        <span style="color: #00f0ff; font-weight: bold;">&gt; STATUS:</span>
+        <span id="dyn-text" style="color: #ffffff;">FULL_STACK_SOFTWARE_ENGINEER</span>
+        <span class="cursor"></span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="grid-data">
+        <div><span class="label">💻 FORMAÇÃO&nbsp;&nbsp;:</span> <span class="val">Engenharia de Software (Previsão de Conclusão: 2027)</span> <span class="cyan">[@ UNIVAG]</span></div>
+        <div><span class="label">📍 LOCALIZAÇÃO:</span> <span class="val">Cuiabá / Várzea Grande - MT, Brasil</span></div>
+        <div><span class="label">🎯 CARREIRA&nbsp;&nbsp;:</span> <span class="val">Full Stack & Arquitetura de Alto Desempenho</span></div>
+        <div><span class="label">🛡️🤖 EVOLUÇÃO :</span> <span class="cyan">Cybersecurity & Inteligência Artificial (AI)</span></div>
+        <div style="grid-column: 1 / -1;"><span class="label">🇺🇸 🇯🇵 IDIOMAS&nbsp;:</span> <span class="val">Português (Nativo) | Inglês (Básico / Intermediário - A2/B1) | Japonês (Básico - JLPT N5)</span></div>
+      </div>
+
+      <div class="buttons">
+        <a href="https://github.com/Paulorgdc" target="_blank" class="btn btn-pink">REPOSITÓRIOS GITHUB</a>
+        <a href="https://www.linkedin.com/in/paulo-roberto-griggi-de-campos" target="_blank" class="btn btn-cyan">PERFIL LINKEDIN</a>
+        <a href="mailto:paulorgdc2005@gmail.com" class="btn btn-dark">CONTATO POR E-MAIL</a>
+      </div>
+    </div>
+
+    <!-- OBJETIVO & PERFIL -->
+    <div class="card">
+      <h2 class="sec-title-cyan">&gt; 01. OBJETIVO_PROFISSIONAL</h2>
+      <p class="p-text">Busco oportunidade na área de Desenvolvimento de Software / Tecnologia da Informação para demonstrar dedicação, iniciativa e capacidade prática na resolução de problemas. Comprometido em somar à equipe técnica no desenvolvimento e manutenção de sistemas, absorver novos conhecimentos com agilidade e construir uma trajetória sólida de resultados e excelência técnica na empresa.</p>
+
+      <div class="divider"></div>
+
+      <h2 class="sec-title-pink">&gt; 02. PERFIL_PROFISSIONAL</h2>
+      <p class="p-text">Desenvolvedor de Software com sólida base acadêmica em Engenharia de Software (6º semestre) e atuação no ciclo completo de desenvolvimento Full Stack, integração de APIs RESTful e arquitetura em nuvem (BaaS/Serverless). Foco contínuo na construção de sistemas resilientes, código escalável e sustentação de bancos de dados relacionais. Possuo perfil multidisciplinar, com domínio no desenvolvimento visual de interfaces responsivas e identidades de marca, aliado a um portfólio prático de projetos e protótipos versionados em repositório público. Direciono meus estudos avançados para Inteligência Artificial (Machine Learning, LLMs e IA Generativa) e Segurança da Informação (Cybersecurity).</p>
+    </div>
+
+    <!-- EXPERIÊNCIA PROFISSIONAL -->
+    <div class="card">
+      <h2 class="sec-title-cyan">&gt; 03. EXPERIÊNCIA_PROFISSIONAL</h2>
+
+      <div class="exp-item">
+        <div class="exp-title">MINISTÉRIO PÚBLICO DO ESTADO DE MATO GROSSO (MPMT) | 2025 – 2026</div>
+        <div class="exp-role">Estagiário de Desenvolvimento de Software</div>
+        <ul>
+          <li>Atuação na sustentação, atualização contínua e otimização de portais e sistemas web internos do órgão.</li>
+          <li>Gestão, manutenção e consultas estruturadas em bancos de dados relacionais, garantindo integridade e disponibilidade das informações.</li>
+          <li>Identificação de inconsistências e apoio na implementação de melhorias contínuas de performance na infraestrutura web.</li>
+          <li>Colaboração em rotinas de suporte técnico a sistemas institucionais e atendimento a demandas dos setores internos.</li>
+        </ul>
+      </div>
+
+      <div class="exp-item" style="border-left-color: #444;">
+        <div class="exp-title">AI SOLUÇÕES TECNOLÓGICAS | 2023 – 2025</div>
+        <div class="exp-role" style="color: #777;">Analista de Suporte e Infraestrutura de TI</div>
+        <ul>
+          <li>Gerenciamento e sustentação de ambientes operacionais corporativos (Windows e Linux) para usuários e estações de desenvolvimento.</li>
+          <li>Elaboração de documentações técnicas, fluxos operacionais e manuais de apoio a sistemas internos.</li>
+          <li>Monitoramento de rotinas internas para garantia de estabilidade dos serviços de tecnologia.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- FORMAÇÃO ACADÊMICA -->
+    <div class="card">
+      <h2 class="sec-title-pink">&gt; 04. FORMAÇÃO_ACADÊMICA</h2>
+      <div style="line-height: 1.8; font-size: 13px;">
+        <div>
+          <strong style="color: #fff;">• Bacharelado em Engenharia de Software</strong> – UNIVAG 
+          <span class="cyan">(Previsão de Conclusão: 2027 – Cursando 6º Semestre)</span>
+        </div>
+        <div style="color: #aaa;">• Ensino Médio Completo – Colégio Salesiano São Gonçalo</div>
+        <div style="color: #777;">• Ensino Fundamental Completo – Colégio Salesiano São Gonçalo</div>
+      </div>
+    </div>
+
+    <!-- COMPETÊNCIAS TÉCNICAS -->
+    <div class="card">
+      <h2 class="sec-title-cyan">&gt; 05. COMPETÊNCIAS_TÉCNICAS</h2>
+      <div class="skills-grid">
+        <div class="skill-box">
+          <span class="label">&gt; Linguagens & Back-end:</span><br>
+          <span class="val">TypeScript, JavaScript, Python, Java, C++, C#, SQL, Node.js, RESTful APIs, Microsserviços</span>
+        </div>
+        <div class="skill-box">
+          <span class="cyan">&gt; Front-end & Mobile:</span><br>
+          <span class="val">React, React Native / Expo, HTML5, CSS3, Tailwind CSS, PWAs</span>
+        </div>
+        <div class="skill-box">
+          <span class="label">&gt; Bancos de Dados & Cloud:</span><br>
+          <span class="val">PostgreSQL, MySQL, MariaDB, SQLite, MongoDB, Supabase, Vercel, Render, Cloudflare</span>
+        </div>
+        <div class="skill-box">
+          <span class="cyan">&gt; Ambientes, DevOps & Ferramentas:</span><br>
+          <span class="val">Git, GitHub, Docker (fundamentos), Linux, Windows, Android, Postman, Jira, VS Code, IntelliJ IDEA</span>
+        </div>
+        <div class="skill-box">
+          <span class="label">&gt; UI/UX & Identidade Visual:</span><br>
+          <span class="val">Prototipação de interfaces responsivas, identidade corporativa (logos, banners); Figma, Adobe Photoshop, Canva</span>
+        </div>
+        <div class="skill-box">
+          <span class="cyan">&gt; Produtividade & Soft Skills:</span><br>
+          <span class="val">Comunicação e Técnicas de Oratória (FATEC SENAI MT), Pacote Office, documentação técnica</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJETOS GITHUB (LISTA COMPLETA DOS REPOSITÓRIOS) -->
+    <div class="card">
+      <h2 class="sec-title-pink">&gt; 06. FEATURED_REPOSITORIES</h2>
+      <div class="repo-grid">
+        <a href="https://github.com/Paulorgdc/oreforge" target="_blank" class="repo-card">
+          <div class="repo-name">oreforge <span>↗</span></div>
+          <p class="repo-desc">Plataforma gamificada de gestão e investimentos financeiros com mecânicas de RPG em TypeScript e React.</p>
+        </a>
+
+        <a href="https://github.com/Paulorgdc/tripway" target="_blank" class="repo-card">
+          <div class="repo-name">tripway <span>↗</span></div>
+          <p class="repo-desc">Aplicação web para planejamento de itinerários e otimização de viagens desenvolvida com arquitetura PWA.</p>
+        </a>
+
+        <a href="https://github.com/Paulorgdc/uniforms" target="_blank" class="repo-card">
+          <div class="repo-name" style="color: #00f0ff;">uniforms <span>↗</span></div>
+          <p class="repo-desc">Sistema web para catálogo, dimensionamento e gestão de uniformes corporativos e personalizações.</p>
+        </a>
+
+        <a href="https://github.com/Paulorgdc/wall-e" target="_blank" class="repo-card">
+          <div class="repo-name" style="color: #00ff66;">wall-e <span>↗</span></div>
+          <p class="repo-desc">Projeto focado em automação, robótica/hardware ou rotinas inteligentes em software.</p>
+        </a>
+
+        <a href="https://github.com/Paulorgdc/relivro" target="_blank" class="repo-card">
+          <div class="repo-name" style="color: #ff0055;">relivro <span>↗</span></div>
+          <p class="repo-desc">Marketplace digital full-stack voltado para a compra, venda e revenda de livros acadêmicos e literários.</p>
+        </a>
+
+        <a href="https://github.com/Paulorgdc?tab=repositories" target="_blank" class="repo-card">
+          <div class="repo-name" style="color: #00f0ff;">+ todos os repositórios <span>↗</span></div>
+          <p class="repo-desc">Acesse o ecossistema completo de repositórios públicos, documentações técnicas e forks no GitHub.</p>
+        </a>
+      </div>
+    </div>
+
+    <footer>
+      システム // フルスタック // 開発者 // ポートフォリオ<br>
+      Paulo Roberto Griggi de Campos &copy; 2026
+    </footer>
+  </div>
+
+  <!-- SCRIPT DE DIGITAÇÃO DAS 8 FRASES -->
+  <script>
+    const phrases = [
+      "FULL_STACK_SOFTWARE_ENGINEER",
+      "TARGET: JAPAN_TECH_EXCHANGE 🇯🇵",
+      "AIMING_FOR_CYBERSECURITY_MASTERY 🛡️",
+      "EXPANDING_KNOWLEDGE_IN_AI_&_ML 🤖",
+      "STUDYING_ENGLISH_LANGUAGE_CEFR 🇺🇸",
+      "STUDYING_JAPANESE_JLPT_PREP 🇯🇵",
+      "BUILDING_SCALABLE_WEB_SYSTEMS_&_APIS",
+      "CONTINUOUS_LEARNING_&_INNOVATION"
+    ];
+    let pIdx = 0;
+    let charIdx = 0;
+    let isDeleting = false;
+    const el = document.getElementById("dyn-text");
+
+    function typeEffect() {
+      const current = phrases[pIdx];
+      
+      if (isDeleting) {
+        el.textContent = current.substring(0, charIdx - 1);
+        charIdx--;
+      } else {
+        el.textContent = current.substring(0, charIdx + 1);
+        charIdx++;
+      }
+
+      let speed = isDeleting ? 30 : 60;
+
+      if (!isDeleting && charIdx === current.length) {
+        speed = 2200;
+        isDeleting = true;
+      } else if (isDeleting && charIdx === 0) {
+        isDeleting = false;
+        pIdx = (pIdx + 1) % phrases.length;
+        speed = 400;
+      }
+
+      setTimeout(typeEffect, speed);
+    }
+
+    document.addEventListener("DOMContentLoaded", typeEffect);
+  </script>
+</body>
+</html>
